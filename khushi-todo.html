@@ -1,0 +1,563 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Khushi's To-Do List 🌸</title>
+<link href="https://fonts.googleapis.com/css2?family=Pacifico&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --pink-light: #fce4ec;
+    --pink-soft: #f8bbd0;
+    --pink-mid: #f48fb1;
+    --pink-deep: #e91e8c;
+    --pink-accent: #ff4da6;
+    --pink-dark: #c2185b;
+    --white: #fff9fb;
+    --text: #6d2646;
+    --shadow: rgba(233, 30, 140, 0.18);
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    min-height: 100vh;
+    background: linear-gradient(135deg, #fce4ec 0%, #ffd6e8 40%, #f8bbd0 70%, #ffeaf3 100%);
+    font-family: 'Nunito', sans-serif;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    padding: 40px 16px 60px;
+    overflow-x: hidden;
+  }
+
+  /* Floating hearts background */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image:
+      radial-gradient(circle, #ff80c0 1px, transparent 1px),
+      radial-gradient(circle, #ffaad4 1.5px, transparent 1.5px);
+    background-size: 60px 60px, 90px 90px;
+    background-position: 0 0, 30px 30px;
+    opacity: 0.2;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .container {
+    position: relative;
+    z-index: 1;
+    width: 100%;
+    max-width: 520px;
+  }
+
+  /* Header */
+  .header {
+    text-align: center;
+    margin-bottom: 32px;
+    animation: floatIn 0.7s cubic-bezier(.34,1.56,.64,1) both;
+  }
+
+  .header .emoji-row {
+    font-size: 2rem;
+    letter-spacing: 6px;
+    margin-bottom: 8px;
+    animation: wiggle 2s infinite 1s;
+  }
+
+  .header h1 {
+    font-family: 'Pacifico', cursive;
+    font-size: 2.8rem;
+    color: var(--pink-dark);
+    text-shadow: 3px 3px 0 #ffc1e3, 5px 5px 0 rgba(233,30,140,0.12);
+    line-height: 1.1;
+  }
+
+  .header p {
+    font-size: 1rem;
+    color: #e0669a;
+    font-weight: 700;
+    margin-top: 6px;
+    letter-spacing: 1px;
+  }
+
+  /* Card */
+  .card {
+    background: rgba(255,255,255,0.72);
+    backdrop-filter: blur(18px);
+    border-radius: 28px;
+    border: 2.5px solid rgba(255,182,215,0.7);
+    box-shadow: 0 12px 48px var(--shadow), 0 2px 0 #fff inset;
+    overflow: hidden;
+    animation: floatIn 0.7s cubic-bezier(.34,1.56,.64,1) 0.1s both;
+  }
+
+  /* Tabs */
+  .tabs {
+    display: flex;
+    border-bottom: 2px solid #fce4ec;
+    background: rgba(255,240,248,0.6);
+  }
+
+  .tab {
+    flex: 1;
+    padding: 14px 10px;
+    text-align: center;
+    font-size: 0.85rem;
+    font-weight: 800;
+    color: #d47fa6;
+    cursor: pointer;
+    transition: all 0.2s;
+    border: none;
+    background: transparent;
+    letter-spacing: 0.5px;
+    position: relative;
+  }
+
+  .tab.active {
+    color: var(--pink-dark);
+    background: rgba(255,255,255,0.9);
+  }
+
+  .tab.active::after {
+    content: '';
+    position: absolute;
+    bottom: -2px; left: 15%; right: 15%;
+    height: 3px;
+    background: var(--pink-accent);
+    border-radius: 2px;
+  }
+
+  /* Input area */
+  .input-area {
+    padding: 22px 24px 16px;
+    border-bottom: 1.5px dashed #fbd0e8;
+    display: flex;
+    gap: 10px;
+    align-items: center;
+  }
+
+  .input-area input {
+    flex: 1;
+    border: 2px solid #f8bbd0;
+    border-radius: 50px;
+    padding: 12px 20px;
+    font-family: 'Nunito', sans-serif;
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: var(--text);
+    background: rgba(255,255,255,0.9);
+    outline: none;
+    transition: border-color 0.2s, box-shadow 0.2s;
+  }
+
+  .input-area input::placeholder { color: #f0a0c8; }
+
+  .input-area input:focus {
+    border-color: var(--pink-accent);
+    box-shadow: 0 0 0 4px rgba(255,77,166,0.12);
+  }
+
+  .add-btn {
+    background: linear-gradient(135deg, var(--pink-accent), var(--pink-dark));
+    color: white;
+    border: none;
+    border-radius: 50%;
+    width: 46px; height: 46px;
+    font-size: 1.5rem;
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    box-shadow: 0 4px 16px rgba(233,30,140,0.35);
+    transition: transform 0.15s, box-shadow 0.15s;
+    flex-shrink: 0;
+  }
+
+  .add-btn:hover { transform: scale(1.12); box-shadow: 0 6px 20px rgba(233,30,140,0.45); }
+  .add-btn:active { transform: scale(0.96); }
+
+  /* Category selector */
+  .cat-row {
+    display: flex;
+    gap: 8px;
+    padding: 10px 24px 16px;
+    border-bottom: 1.5px dashed #fbd0e8;
+    flex-wrap: wrap;
+  }
+
+  .cat-chip {
+    padding: 5px 14px;
+    border-radius: 50px;
+    font-size: 0.78rem;
+    font-weight: 800;
+    cursor: pointer;
+    border: 2px solid transparent;
+    transition: all 0.2s;
+    background: #fce4ec;
+    color: #c2185b;
+    letter-spacing: 0.3px;
+  }
+
+  .cat-chip.selected, .cat-chip:hover {
+    background: var(--pink-accent);
+    color: white;
+    border-color: var(--pink-accent);
+    transform: translateY(-1px);
+  }
+
+  /* Task list */
+  .task-list {
+    padding: 10px 0 8px;
+    min-height: 80px;
+    max-height: 420px;
+    overflow-y: auto;
+  }
+
+  .task-list::-webkit-scrollbar { width: 5px; }
+  .task-list::-webkit-scrollbar-track { background: transparent; }
+  .task-list::-webkit-scrollbar-thumb { background: #f8bbd0; border-radius: 99px; }
+
+  .task-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 13px 24px;
+    border-bottom: 1px solid rgba(252,228,236,0.7);
+    transition: background 0.15s;
+    animation: slideIn 0.35s cubic-bezier(.34,1.56,.64,1) both;
+    position: relative;
+  }
+
+  .task-item:hover { background: rgba(255,240,250,0.7); }
+  .task-item:last-child { border-bottom: none; }
+
+  .check-btn {
+    width: 26px; height: 26px;
+    border-radius: 50%;
+    border: 2.5px solid #f48fb1;
+    background: white;
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 0.9rem;
+    flex-shrink: 0;
+    transition: all 0.2s;
+  }
+
+  .check-btn.done {
+    background: linear-gradient(135deg, #f48fb1, var(--pink-dark));
+    border-color: var(--pink-dark);
+    color: white;
+  }
+
+  .check-btn:hover { transform: scale(1.15); border-color: var(--pink-accent); }
+
+  .task-text {
+    flex: 1;
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: var(--text);
+    transition: all 0.2s;
+  }
+
+  .task-text.done {
+    text-decoration: line-through;
+    color: #e0aac0;
+    font-weight: 600;
+  }
+
+  .task-tag {
+    font-size: 0.7rem;
+    font-weight: 800;
+    padding: 3px 10px;
+    border-radius: 50px;
+    flex-shrink: 0;
+  }
+
+  .tag-personal { background: #fce4ec; color: #c2185b; }
+  .tag-work     { background: #e8f5e9; color: #2e7d32; }
+  .tag-fun      { background: #fff3e0; color: #e65100; }
+  .tag-study    { background: #e3f2fd; color: #1565c0; }
+
+  .del-btn {
+    background: none;
+    border: none;
+    color: #f0a0c8;
+    cursor: pointer;
+    font-size: 1rem;
+    padding: 4px;
+    border-radius: 50%;
+    transition: all 0.2s;
+    opacity: 0;
+    flex-shrink: 0;
+  }
+
+  .task-item:hover .del-btn { opacity: 1; }
+  .del-btn:hover { color: var(--pink-dark); transform: scale(1.2); }
+
+  /* Empty state */
+  .empty {
+    text-align: center;
+    padding: 36px 20px;
+    color: #e0aac0;
+    font-weight: 700;
+    font-size: 1rem;
+    animation: floatIn 0.5s ease both;
+  }
+
+  .empty .big { font-size: 2.5rem; display: block; margin-bottom: 8px; }
+
+  /* Footer stats */
+  .footer {
+    padding: 14px 24px;
+    background: rgba(255,240,248,0.6);
+    border-top: 1.5px solid #fce4ec;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 0.82rem;
+    font-weight: 800;
+    color: #e0669a;
+  }
+
+  .progress-bar {
+    height: 6px;
+    background: #fce4ec;
+    border-radius: 99px;
+    overflow: hidden;
+    flex: 1;
+    margin: 0 14px;
+  }
+
+  .progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--pink-mid), var(--pink-accent));
+    border-radius: 99px;
+    transition: width 0.4s cubic-bezier(.34,1.56,.64,1);
+  }
+
+  /* Clear done btn */
+  .clear-btn {
+    text-align: center;
+    padding: 4px 24px 16px;
+  }
+
+  .clear-btn button {
+    background: none;
+    border: 2px solid #f8bbd0;
+    color: #e0669a;
+    font-family: 'Nunito', sans-serif;
+    font-size: 0.8rem;
+    font-weight: 800;
+    padding: 6px 18px;
+    border-radius: 50px;
+    cursor: pointer;
+    transition: all 0.2s;
+    letter-spacing: 0.3px;
+  }
+
+  .clear-btn button:hover {
+    background: #fce4ec;
+    border-color: var(--pink-accent);
+    color: var(--pink-dark);
+  }
+
+  /* Confetti burst on complete */
+  .confetti {
+    position: fixed;
+    pointer-events: none;
+    z-index: 9999;
+    font-size: 1.5rem;
+    animation: burst 0.9s ease-out forwards;
+  }
+
+  /* Animations */
+  @keyframes floatIn {
+    from { opacity: 0; transform: translateY(30px) scale(0.92); }
+    to   { opacity: 1; transform: translateY(0) scale(1); }
+  }
+
+  @keyframes slideIn {
+    from { opacity: 0; transform: translateX(-20px); }
+    to   { opacity: 1; transform: translateX(0); }
+  }
+
+  @keyframes wiggle {
+    0%,100% { transform: rotate(0deg); }
+    20% { transform: rotate(-8deg); }
+    40% { transform: rotate(8deg); }
+    60% { transform: rotate(-5deg); }
+    80% { transform: rotate(5deg); }
+  }
+
+  @keyframes burst {
+    0%   { opacity: 1; transform: translate(-50%,-50%) scale(0); }
+    50%  { opacity: 1; transform: translate(var(--tx), var(--ty)) scale(1.2); }
+    100% { opacity: 0; transform: translate(calc(var(--tx)*1.6), calc(var(--ty)*1.8)) scale(0.5); }
+  }
+</style>
+</head>
+<body>
+
+<div class="container">
+  <div class="header">
+    <div class="emoji-row">🌸 💖 🌸</div>
+    <h1>Khushi's List</h1>
+    <p>✨ You've got this, bestie! ✨</p>
+  </div>
+
+  <div class="card">
+    <!-- Tabs -->
+    <div class="tabs">
+      <button class="tab active" onclick="switchTab('all', this)">🌷 All</button>
+      <button class="tab" onclick="switchTab('active', this)">💫 Active</button>
+      <button class="tab" onclick="switchTab('done', this)">🎀 Done</button>
+    </div>
+
+    <!-- Input -->
+    <div class="input-area">
+      <input type="text" id="taskInput" placeholder="Add something cute to do…" maxlength="80" onkeydown="if(event.key==='Enter') addTask()">
+      <button class="add-btn" onclick="addTask()">+</button>
+    </div>
+
+    <!-- Category -->
+    <div class="cat-row" id="catRow">
+      <span class="cat-chip selected" onclick="selectCat(this,'personal')">💗 Personal</span>
+      <span class="cat-chip" onclick="selectCat(this,'work')">🌿 Work</span>
+      <span class="cat-chip" onclick="selectCat(this,'fun')">🎉 Fun</span>
+      <span class="cat-chip" onclick="selectCat(this,'study')">📚 Study</span>
+    </div>
+
+    <!-- List -->
+    <div class="task-list" id="taskList"></div>
+
+    <!-- Clear -->
+    <div class="clear-btn">
+      <button onclick="clearDone()">🧹 Clear completed</button>
+    </div>
+
+    <!-- Footer -->
+    <div class="footer">
+      <span id="doneCount">0 done</span>
+      <div class="progress-bar"><div class="progress-fill" id="progressFill" style="width:0%"></div></div>
+      <span id="totalCount">0 tasks</span>
+    </div>
+  </div>
+</div>
+
+<script>
+  let tasks = JSON.parse(localStorage.getItem('khushi_tasks') || '[]');
+  let selectedCat = 'personal';
+  let currentTab = 'all';
+
+  const catEmoji = { personal:'💗', work:'🌿', fun:'🎉', study:'📚' };
+  const catClass = { personal:'tag-personal', work:'tag-work', fun:'tag-fun', study:'tag-study' };
+
+  function save() { localStorage.setItem('khushi_tasks', JSON.stringify(tasks)); }
+
+  function selectCat(el, cat) {
+    document.querySelectorAll('.cat-chip').forEach(c => c.classList.remove('selected'));
+    el.classList.add('selected');
+    selectedCat = cat;
+  }
+
+  function switchTab(tab, el) {
+    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+    el.classList.add('active');
+    currentTab = tab;
+    render();
+  }
+
+  function addTask() {
+    const input = document.getElementById('taskInput');
+    const text = input.value.trim();
+    if (!text) { input.focus(); return; }
+    tasks.unshift({ id: Date.now(), text, cat: selectedCat, done: false });
+    input.value = '';
+    save(); render();
+    input.focus();
+  }
+
+  function toggleTask(id) {
+    const t = tasks.find(t => t.id === id);
+    if (!t) return;
+    t.done = !t.done;
+    save();
+    if (t.done) spawnConfetti();
+    render();
+  }
+
+  function deleteTask(id) {
+    tasks = tasks.filter(t => t.id !== id);
+    save(); render();
+  }
+
+  function clearDone() {
+    tasks = tasks.filter(t => !t.done);
+    save(); render();
+  }
+
+  function render() {
+    const list = document.getElementById('taskList');
+    let filtered = tasks;
+    if (currentTab === 'active') filtered = tasks.filter(t => !t.done);
+    if (currentTab === 'done')   filtered = tasks.filter(t => t.done);
+
+    if (filtered.length === 0) {
+      list.innerHTML = `<div class="empty"><span class="big">${currentTab==='done'?'🎀':'🌸'}</span>${currentTab==='done'?'Nothing completed yet!':'All clear! Add something cute 💕'}</div>`;
+    } else {
+      list.innerHTML = filtered.map(t => `
+        <div class="task-item" id="item-${t.id}">
+          <button class="check-btn ${t.done?'done':''}" onclick="toggleTask(${t.id})">${t.done?'✓':''}</button>
+          <span class="task-text ${t.done?'done':''}">${escHtml(t.text)}</span>
+          <span class="task-tag ${catClass[t.cat]}">${catEmoji[t.cat]} ${t.cat}</span>
+          <button class="del-btn" onclick="deleteTask(${t.id})">✕</button>
+        </div>
+      `).join('');
+    }
+
+    const done = tasks.filter(t => t.done).length;
+    const total = tasks.length;
+    const pct = total ? Math.round(done/total*100) : 0;
+    document.getElementById('doneCount').textContent = `${done} done`;
+    document.getElementById('totalCount').textContent = `${total} task${total!==1?'s':''}`;
+    document.getElementById('progressFill').style.width = pct + '%';
+  }
+
+  function escHtml(s) {
+    return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  }
+
+  function spawnConfetti() {
+    const emojis = ['💖','🌸','✨','🎀','💕','⭐','🌷','💫'];
+    for (let i = 0; i < 7; i++) {
+      setTimeout(() => {
+        const el = document.createElement('div');
+        el.className = 'confetti';
+        el.textContent = emojis[Math.floor(Math.random()*emojis.length)];
+        const x = 30 + Math.random() * 40;
+        const y = 30 + Math.random() * 40;
+        el.style.left = x + 'vw';
+        el.style.top  = y + 'vh';
+        el.style.setProperty('--tx', (Math.random()*120-60)+'px');
+        el.style.setProperty('--ty', (Math.random()*-100-20)+'px');
+        document.body.appendChild(el);
+        setTimeout(() => el.remove(), 900);
+      }, i * 60);
+    }
+  }
+
+  // Seed with a few starter tasks if empty
+  if (tasks.length === 0) {
+    tasks = [
+      { id: 1, text: 'Drink 8 glasses of water 💧', cat: 'personal', done: false },
+      { id: 2, text: 'Go for a walk 🌿', cat: 'fun', done: false },
+      { id: 3, text: 'Read for 20 minutes 📖', cat: 'study', done: false },
+    ];
+    save();
+  }
+
+  render();
+</script>
+</body>
+</html>
